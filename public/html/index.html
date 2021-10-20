@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="/css/mdi.css"> -->
+    <link rel="stylesheet" href="/css/style.css">
+    <title>Controller</title>
+</head>
+
+<body>
+    <nav>
+        <div id="user">
+            <img src="../res/placeholders/user.png" alt="User icon">
+            <span id="name">Username</span>
+        </div>
+        <div id="clock">
+            <span id="time">Time</span>
+            <i class="mdi mdi-clock"></i>
+        </div>
+        
+    </nav>
+
+    <main>
+        <div id="header">
+            Playing from
+            <span id="album">
+                Album
+            </span>
+        </div>
+        <div id="playing">
+            <img src="../res/placeholders/album.png" alt="Album cover">
+            <div id="ui">
+                <div id="info">
+                    <div>
+                        <span id="name">Song</span><br>
+                        <span id="artist">Artist</span>
+                    </div>
+                    <span id="like"><i class="mdi mdi-heart-plus"></i></span>
+                </div>
+                <div id="progress">
+                    <span id="start">0:00</span>
+                    <div id="bar">
+                        <div id="value"></div>
+                    </div>
+                    <span id="end">3:00</span>
+                </div>
+                <div id="controls">
+                    <span id="shuffle"><i class="mdi mdi-shuffle"></i></span>
+                    <span id="prev" class="rnd"><i class="mdi mdi-skip-previous"></i></span>
+                    <span id="play" class="rnd"><i class="mdi mdi-play"></i></span>
+                    <span id="next" class="rnd"><i class="mdi mdi-skip-next"></i></span>
+                    <span id="repeat"><i class="mdi mdi-repeat"></i></span>
+                </div>
+            </div>
+        </div>
+        <div id="device">
+            <i class="mdi mdi-cellphone-link"></i>
+            <span id="name"></span>
+        </div>
+    </main>
+
+    <footer>
+        <span id="status">
+            <span>Status</span>
+        </span>
+        <div id="buttons">
+            <span id="reload">
+                <i class="mdi mdi-refresh"></i>
+            </span>
+            <span id="quit">
+                <i class="mdi mdi-exit-run"></i>
+            </span>
+            <span id="shutdown">
+                <i class="mdi mdi-power"></i>
+            </span>
+        </div>
+    </footer>
+
+    <script src="/js/bundle.js"></script>
+</body>
+
+</html>

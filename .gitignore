@@ -1,0 +1,8 @@
+node_modules/
+build/
+release/
+keys/*.json
+!keys/tokens_example.json
+src/old/
+*.code-workspace
+*.txt
