@@ -4,7 +4,7 @@
   "description": "Program for controlling external Spotify Connect instances using Chrome Kiosk mode and Socket.io",
   "main": "src/main.js",
   "scripts": {
-    "start": "npm run compile && node ./build/main.js",
+    "start": "node ./build/main.js",
     "compile": "tsc && npm run sc && npm run pack && npm run lint",
     "pack": "browserify ./build/frontend/index.js -o ./build/frontend/bundle.js",
     "lint": "eslint .",

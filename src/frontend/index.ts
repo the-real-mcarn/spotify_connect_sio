@@ -21,12 +21,14 @@ setInterval(() => {
 
 // Refesh button
 document.querySelector("span#reload")?.addEventListener("click", () => {
+    message("warning", "Reloading...", 20000);
     window.location.reload();
 });
 
 // Quit button
 document.querySelector("span#quit")?.addEventListener("click", () => {
     if (debug) console.log("[IPC] \t Request quit");
+    message("warning", "Exitting...", 20000);
     socket.emit("app", {
         type: "quit"
     });
@@ -35,6 +37,7 @@ document.querySelector("span#quit")?.addEventListener("click", () => {
 // Shutdown button
 document.querySelector("span#shutdown")?.addEventListener("click", () => {
     if (debug) console.log("[IPC] \t Request shutdown");
+    message("warning", "Shutting down...", 20000);
     socket.emit("app", {
         type: "shutdown"
     });
@@ -45,7 +48,100 @@ document.querySelector("span#shutdown")?.addEventListener("click", () => {
  *  Music control button handlers
  */
 
+// Like button
+document.querySelector("span#like")?.addEventListener("click", () => {
+    if (debug) console.log("[IPC] \t Toggle like request");
+    message("info", `${(itemLiked) ? "Removing" : "Adding"} current item ${(itemLiked) ? "from" : "to"} library...`, 4000);
+    socket.emit("spotify", (itemLiked) ? "removeFromMySavedTracks" : "addToMySavedTracks", [[itemId]], (data: SpotifyApi.VoidResponse, response: { code: number, message: string }) => {
+        if (responseCodes.indexOf(response.code) != -1) {
+            setTimeout(() => {
+                updatePlaybackState();
+            }, 1000);
+        } else {
+            message("error", "Request failed");
+        }
+    });
+});
 
+// Shuffle button
+document.querySelector("span#shuffle")?.addEventListener("click", () => {
+    if (debug) console.log("[IPC] \t Toggle shuffle request");
+    message("info", `Turning shuffle ${(!shuffleActive) ? "on" : "off"}...`, 4000);
+    socket.emit("spotify", "setShuffle", [!shuffleActive], (data: SpotifyApi.VoidResponse, response: { code: number, message: string }) => {
+        if (responseCodes.indexOf(response.code) != -1) {
+            setTimeout(() => {
+                updatePlaybackState();
+            }, 1000);
+        } else {
+            message("error", "Request failed");
+        }
+    });
+});
+
+// Previous button
+document.querySelector("span#prev")?.addEventListener("click", () => {
+    if (debug) console.log("[IPC] \t Previous track request");
+    socket.emit("spotify", "skipToPrevious", [], (data: SpotifyApi.VoidResponse, response: { code: number, message: string }) => {
+        if (responseCodes.indexOf(response.code) != -1) {
+            setTimeout(() => {
+                updatePlaybackState();
+            }, 1000);
+        } else {
+            message("error", "Request failed");
+        }
+    });
+});
+
+// Play button
+document.querySelector("span#play")?.addEventListener("click", () => {
+    if (debug) console.log("[IPC] \t Toggle playback request");
+    socket.emit("spotify", (playbackActive) ? "pause" : "play", [], (data: SpotifyApi.VoidResponse, response: { code: number, message: string }) => {
+        if (responseCodes.indexOf(response.code) != -1) {
+            setTimeout(() => {
+                updatePlaybackState();
+            }, 1000);
+        } else {
+            message("error", "Request failed");
+        }
+    });
+});
+
+// Next button
+document.querySelector("span#next")?.addEventListener("click", () => {
+    if (debug) console.log("[IPC] \t Next track request");
+    socket.emit("spotify", "skipToNext", [], (data: SpotifyApi.VoidResponse, response: { code: number, message: string }) => {
+        if (responseCodes.indexOf(response.code) != -1) {
+            setTimeout(() => {
+                updatePlaybackState();
+            }, 1000);
+        } else {
+            message("error", "Request failed");
+        }
+    });
+});
+
+// Repeat button
+document.querySelector("span#repeat")?.addEventListener("click", () => {
+    if (debug) console.log("[IPC] \t Toggle repeat request");
+
+    if (repeatMode + 1 > repeatModes.length - 1) {
+        // Reached end of list
+        repeatMode = 0;
+    } else {
+        repeatMode++;
+    }
+
+    message("info", `Setting repeat mode to ${repeatModes[repeatMode]}...`, 4000);
+    socket.emit("spotify", "setRepeat", [repeatModes[repeatMode]], (data: SpotifyApi.VoidResponse, response: { code: number, message: string }) => {
+        if (responseCodes.indexOf(response.code) != -1) {
+            setTimeout(() => {
+                updatePlaybackState();
+            }, 1000);
+        } else {
+            message("error", "Request failed");
+        }
+    });
+});
 
 
 /**
@@ -54,7 +150,7 @@ document.querySelector("span#shutdown")?.addEventListener("click", () => {
 
 let messageTimeout: NodeJS.Timeout;
 
-function message(type: string, content: string) {
+function message(type: string, content: string, time = 8000) {
     const status = document.querySelector("span#status") as HTMLSpanElement;
     const icon = document.createElement("i");
     const contentElement = document.createElement("span");
@@ -85,7 +181,7 @@ function message(type: string, content: string) {
             icon.className = "mdi mdi-comment-check";
             icon.style.color = "#c8c8c8";
             status.replaceChildren(icon, contentElement);
-        }, 8000);
+        }, time);
     } else {
         clearTimeout(messageTimeout);
     }
@@ -114,7 +210,18 @@ socket.on("app", (response: { type: string, data: any }) => {
 
 let barUpdateInterval: NodeJS.Timer;
 let endOfItemTimeout: NodeJS.Timeout;
-let itemProgressMs: number;
+
+let playbackActive: boolean;
+let shuffleActive: boolean;
+let itemLiked: boolean;
+let itemId: string;
+let repeatMode: number;
+const repeatModes = ["off", "track", "context"];
+
+// Set default interval
+setInterval(() => {
+    updatePlaybackState();
+}, 30000);
 
 function updatePlaybackState() {
     socket.emit("spotify", "getMyCurrentPlaybackState", [], (data: SpotifyApi.CurrentPlaybackResponse, response: { code: number, message: string }) => {
@@ -124,10 +231,67 @@ function updatePlaybackState() {
                 // Device info
                 document.querySelector("div#device > span#name").innerHTML = data.device.name;
 
+                // Update shuffle and repeat state
+                const play = document.querySelector("div#controls > span#play");
+                const like = document.querySelector("div#info > span#like");
+                const shuffle = document.querySelector("div#controls > span#shuffle");
+                const repeat = document.querySelector("div#controls > span#repeat");
+
+                playbackActive = data.is_playing;
+                if (playbackActive) {
+                    play.children[0].className = "mdi mdi-pause";
+
+                } else {
+                    play.children[0].className = "mdi mdi-play";
+                    playbackActive = false;
+                }
+
+                itemId = data.item.id;
+                socket.emit("spotify", "containsMySavedTracks", [[data.item.id]], (data: boolean[], response: { code: number, message: string }) => {
+                    if (responseCodes.indexOf(response.code) != -1) {
+                        itemLiked = data[0];
+                        if (itemLiked) {
+                            // Item liked
+                            like.className = "active";
+                            like.children[0].className = "mdi mdi-heart-remove";
+                        } else {
+                            // Item not liked
+                            like.className = "";
+                            like.children[0].className = "mdi mdi-heart-plus";
+                        }
+                    } else {
+                        message("error", response.message);
+                    }
+                });
+
+                shuffleActive = data.shuffle_state;
+                if (shuffleActive) {
+                    shuffle.className = "active";
+                } else {
+                    shuffle.className = "";
+                }
+
+                repeatMode = repeatModes.indexOf(data.repeat_state);
+                switch (data.repeat_state) {
+                    case "off":
+                        repeat.children[0].className = "mdi mdi-repeat-off";
+                        repeat.className = "";
+                        break;
+                    case "track":
+                        repeat.children[0].className = "mdi mdi-repeat-once";
+                        repeat.className = "active";
+                        break;
+                    case "context":
+                        repeat.children[0].className = "mdi mdi-repeat";
+                        repeat.className = "active";
+                        break;
+                }
+
+                // Update progress bar
                 updatePlaybackTime(data.progress_ms, data.item.duration_ms);
 
+                // Update track/episode info
                 let item: SpotifyApi.TrackObjectFull | SpotifyApi.EpisodeObject;
-
                 if (data.currently_playing_type == "track") {
                     item = data.item as SpotifyApi.TrackObjectFull;
 
@@ -174,11 +338,11 @@ function msToStamp(number: number) {
     let value = "";
 
     value += String(Math.floor((number / 1000) / 60));
-    value += ":"; 
+    value += ":";
 
     const seconds = Math.floor((number / 1000) % 60);
     if (seconds < 10) {
-        value += "0"; 
+        value += "0";
     }
     value += String(seconds);
 
@@ -189,28 +353,36 @@ function updatePlaybackTime(start: number, end: number) {
     const timeCurrent = document.querySelector("div#progress > span#start") as HTMLSpanElement;
     const timeEnd = document.querySelector("div#progress > span#end") as HTMLSpanElement;
 
-    itemProgressMs = start;
-    timeCurrent.innerHTML = msToStamp(start);
-    
-    timeEnd.innerHTML = msToStamp(end);
-
     const barFull = document.querySelector("div#progress > div#bar") as HTMLDivElement;
     let maxWidth = barFull.offsetWidth;
+
     const barValue = document.querySelector("div#progress > div#bar > div#value") as HTMLDivElement;
     maxWidth = maxWidth - (parseFloat(getComputedStyle(barValue).padding) * 2);
-    console.log(maxWidth);
+
+    timeCurrent.innerHTML = msToStamp(start);
+    barValue.style.width = String((start / end) * maxWidth) + "px";
+    timeEnd.innerHTML = msToStamp(end);
 
     // Register interval to update the timer and bar
-    if (barUpdateInterval) {
-        clearInterval(barUpdateInterval);
+    clearInterval(barUpdateInterval);
+    clearTimeout(endOfItemTimeout);
+
+    if (playbackActive) {
+        barUpdateInterval = setInterval(() => {
+            start += 1000;
+            timeCurrent.innerHTML = msToStamp(start);
+            barValue.style.width = String((start / end) * maxWidth) + "px";
+        }, 1000);
+
+        // Register full update timeout for when the song ends
+        if (endOfItemTimeout) {
+            clearTimeout(endOfItemTimeout);
+        }
+
+        endOfItemTimeout = setTimeout(() => {
+            updatePlaybackState();
+        }, (end - start) + 500); // Add 500 for error correction
     }
-
-    barUpdateInterval = setInterval(() => {
-        itemProgressMs += 1000;
-        timeCurrent.innerHTML = msToStamp(itemProgressMs);
-    }, 1000);
-
-    // Register full update timeout for when the song ends
 }
 
 

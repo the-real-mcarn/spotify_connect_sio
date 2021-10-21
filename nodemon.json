@@ -1,5 +1,5 @@
 {
     "watch": ["src", "scss"],
     "ext": "ts scss",
-    "exec": "npm start"
+    "exec": "npm run compile && npm start"
 }

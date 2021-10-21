@@ -112,7 +112,7 @@ function registerRefreshTimeout(timeout: number) {
 const authorization = new Promise<void>((resolve, reject) => {
     if (tokens.refresh == "" && tokens.auth == "") {
         // There is no old refresh token and no auth grant token, one will have to be made
-        const scopes = ["user-read-private", "user-read-email", "user-read-playback-state", "user-read-playback-position", "user-modify-playback-state", "user-library-modify"];
+        const scopes = ["user-read-private", "user-read-email", "user-read-playback-state", "user-read-playback-position", "user-modify-playback-state", "user-library-read", "user-library-modify"];
         const state = "ControllerAuthFlow";
 
         // Create and print authorization url
@@ -172,7 +172,8 @@ authorization.then(() => {
     let window: shell.ChildProcess;
     if (process.platform == "linux") {
         console.log("[IPC] \t Starting chromium in kiosk mode");
-        window = shell.spawn("chromium-browser http://localhost:3000 --start-fullscreen --kiosk --incognito --noerrdialogs --disable-translate --no-first-run --fast --fast-start --disable-infobars --disable-features=TranslateUI --disk-cache-dir=/dev/null  --password-store=basic");
+        window = shell.spawn("/usr/bin/chromium-browser", ["--noerrdialogs", "--disable-infobars", "--kiosk", "http://localhost:3000"]);
+        // window = shell.exec("/usr/bin/chromium-browser --noerrdialogs --disable-infobars --kiosk http://localhost:3000");
 
         window.on("exit", (code) => {
             console.log(`[IPC] \t Kiosk closed with code ${code}, exiting server`);
@@ -205,17 +206,15 @@ authorization.then(() => {
             switch (data.type) {
                 // Quit app
                 case "quit":
-                    // window.kill();
-                    process.exit();
+                    window.kill();
                     break;
 
                 // Shutdown device
                 case "shutdown":
-                    // window.kill();
-
                     // Linux only!
                     if (process.platform == "linux") {
-                        shell.exec("shutdown now");
+                        shell.exec("sudo shutdown now");
+                        window.kill();
                     } else {
                         console.error("[IPC] \t This function is only supported on Linux systems");
                     }

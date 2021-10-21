@@ -19122,10 +19122,11 @@ html {
     padding: 0; }
 
 body {
-  width: 455px;
+  width: 448px;
   height: 320px;
   font-size: small;
   font-family: sans-serif;
+  user-select: none;
   background: #232323; }
 
 nav {
@@ -19171,7 +19172,7 @@ main {
     gap: 1em;
     align-items: center; }
     main > div#playing > img {
-      height: 168px; }
+      height: 156px; }
     main > div#playing > div#ui {
       display: flex;
       flex-direction: column;
@@ -19196,7 +19197,8 @@ main {
           border-radius: 100%; }
           main > div#playing > div#ui > div#info > span#like.active {
             color: #1DB954; }
-          main > div#playing > div#ui > div#info > span#like:hover {
+          main > div#playing > div#ui > div#info > span#like:active {
+            color: white;
             background-color: #202020; }
       main > div#playing > div#ui > div#progress {
         display: flex;
@@ -19208,7 +19210,7 @@ main {
           border-radius: 50px;
           background-color: #171717; }
           main > div#playing > div#ui > div#progress > div#bar > div#value {
-            width: 111px;
+            width: 0;
             height: 0.1em;
             background-color: #1DB954;
             padding: 0.1em;
@@ -19228,7 +19230,8 @@ main {
           border-radius: 100%; }
           main > div#playing > div#ui > div#controls > span.active {
             color: #1DB954; }
-          main > div#playing > div#ui > div#controls > span:hover {
+          main > div#playing > div#ui > div#controls > span:active {
+            color: white;
             background-color: #202020; }
           main > div#playing > div#ui > div#controls > span.rnd {
             font-size: 2em;
@@ -19239,7 +19242,7 @@ main {
               background-color: #c8c8c8;
               width: 2em;
               height: 2em; }
-              main > div#playing > div#ui > div#controls > span.rnd#play:hover {
+              main > div#playing > div#ui > div#controls > span.rnd#play:active {
                 background-color: #a3a3a3; }
   main > div#device {
     color: #1DB954;
@@ -19275,5 +19278,5 @@ footer {
       color: #c8c8c8;
       cursor: pointer;
       padding: 0.25em; }
-      footer > div#buttons > span:hover {
+      footer > div#buttons > span:active {
         background-color: #202020; }
