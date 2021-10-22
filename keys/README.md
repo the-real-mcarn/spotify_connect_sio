@@ -5,10 +5,10 @@ Store tokens.json here with the following formatting or change tokens_example.js
 ```json
 {
     "client": {
-        "id": "",
-        "secret": ""
+        "id": "", // Client ID
+        "secret": "" // Client secret
     },
-    "refresh": "",
-    "auth": ""
+    "refresh": "", // Refresh token - DO NOT EDIT AFTER FIRST SETUP
+    "auth": "" // Access grant token received during first setup
 }
 ```
