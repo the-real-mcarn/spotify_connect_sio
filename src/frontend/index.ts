@@ -208,7 +208,7 @@ socket.on("app", (response: { type: string, data: any }) => {
  *  Update playback display
  */
 
-let barUpdateInterval: NodeJS.Timer;
+let barUpdateInterval: NodeJS.Timeout;
 let endOfItemTimeout: NodeJS.Timeout;
 
 let playbackActive: boolean;
